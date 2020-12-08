@@ -72,6 +72,9 @@ void print_matrix(float *matrix, const int size)
 	#else
 	    matrix = __builtin_assume_aligned(matrix,32);
 	#endif
+    #ifdef __INTEL_COMPILER
+    	#pragma noparallel
+    #endif
     for (i = 0; i < size; i++) {
         for (j = 0; j < size; j++) {
             printf("%.f ", matrix[i * size + j]);
@@ -90,8 +93,11 @@ void print_matrix(float *matrix, const int size)
 void swapRowFromMatrix(float *matrix, const int row, const int row_new, const int n){
     #ifdef __INTEL_COMPILER
     	__assume_aligned(matrix,32);
+    	#pragma vector aligned
+    	#pragma ivdep
 	#else
     	matrix = __builtin_assume_aligned(matrix,32);
+    	#pragma GCC ivdep
 	#endif
     for (int i=0;i<n;i++){
     	float temp = matrix[row*n +i];
@@ -110,8 +116,11 @@ void swapRowFromMatrix(float *matrix, const int row, const int row_new, const in
 void  substractRowFromWeightRow(float * matrix, const int row_result, const int row, const float weight, const int n){
     #ifdef __INTEL_COMPILER
     	__assume_aligned(matrix,32);
+		#pragma ivdep
+		#pragma vector aligned
 	#else
     	matrix = __builtin_assume_aligned(matrix,32);
+		#pragma GCC ivdep
 	#endif
     for(int i=0;i<n;i++)
         matrix[row_result*n +i] -= weight*matrix[row*n +i];
@@ -152,6 +161,11 @@ int gaussianElimination(float* matrix, float *augmented_matrix,const int n){
             	return -1;
             }
         }
+        #ifdef __INTEL_COMPILER
+        	#pragma parallel always assert
+		#else
+    		#pragma GCC ivdep
+    	#endif
    		for (int j=0;j<n;j++) {
    			if(i!=j){
 				float weight = matrix[j*n +i]/matrix[i*n +i];
@@ -162,7 +176,18 @@ int gaussianElimination(float* matrix, float *augmented_matrix,const int n){
 			}
    		}
     }
+    #ifdef __INTEL_COMPILER
+        #pragma parallel always assert
+  	#else
+    	#pragma GCC ivdep
+    #endif
     for(int i=0; i<n; i++){
+	    #ifdef __INTEL_COMPILER
+	    	#pragma vector aligned
+    		#pragma ivdep
+		#else
+    		#pragma GCC ivdep
+    	#endif
         for(int j=0; j<n; j++){
             augmented_matrix[i*n + j] /= matrix[i*n +i];
         }
