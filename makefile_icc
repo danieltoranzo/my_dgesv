@@ -1,0 +1,61 @@
+all: showver my_dgesvO0 my_dgesvO1 my_dgesvO2 my_dgesvO3 my_dgesvOfast my_dgesvipo my_dgesvpgo
+
+CC = icc
+CFLAGS = -Wall -Wextra -fopenmp
+CFLAGSEXTRA = -xHost -xcore-avx2 -mtune=native
+SMALL = 2048
+MEDIUM = 4096
+LARGE = 6144
+
+showver:
+	${CC} --version
+
+my_dgesvO0: my_dgesv.c
+	${CC} -O0 ${CFLAGS} -o $@ $^
+
+my_dgesvO1: my_dgesv.c
+	${CC} -O1 ${CFLAGS} -o $@ $^
+
+my_dgesvO2: my_dgesv.c
+	${CC} -O2 ${CFLAGS} ${CFLAGSEXTRA} -o $@ $^
+
+my_dgesvO3: my_dgesv.c
+	${CC} -O3 ${CFLAGS} ${CFLAGSEXTRA} -o $@ $^
+
+my_dgesvOfast: my_dgesv.c
+	${CC} -Ofast ${CFLAGS} ${CFLAGSEXTRA} -o $@ $^
+
+my_dgesvipo: my_dgesv.c
+	${CC} -Ofast ${CFLAGS} ${CFLAGSEXTRA} -ipo -o $@ $^
+
+my_dgesvpgo: my_dgesv.c
+	${CC} -Ofast ${CFLAGS} ${CFLAGSEXTRA} -prof-gen -parallel -o $@ $^
+	./$@ ${SMALL}
+	${CC} -Ofast ${CFLAGS} ${CFLAGSEXTRA} -use-gen -parallel -o $@ $^
+
+run:
+	./my_dgesvO0 ${SMALL}
+	./my_dgesvO0 ${MEDIUM}
+	./my_dgesvO0 ${LARGE}
+	./my_dgesvO1 ${SMALL}
+	./my_dgesvO1 ${MEDIUM}
+	./my_dgesvO1 ${LARGE}
+	./my_dgesvO2 ${SMALL}
+	./my_dgesvO2 ${MEDIUM}
+	./my_dgesvO2 ${LARGE}
+	./my_dgesvO3 ${SMALL}
+	./my_dgesvO3 ${MEDIUM}
+	./my_dgesvO3 ${LARGE}
+	./my_dgesvOfast ${SMALL}
+	./my_dgesvOfast ${MEDIUM}
+	./my_dgesvOfast ${LARGE}
+	./my_dgesvipo ${SMALL}
+	./my_dgesvipo ${MEDIUM}
+	./my_dgesvipo ${LARGE}
+	./my_dgesvpgo ${SMALL}
+	./my_dgesvpgo ${MEDIUM}
+	./my_dgesvpgo ${LARGE}
+
+clean: 
+	rm -f *.optrpt *.dyn my_dgesvO0 my_dgesvO1 my_dgesvO2 my_dgesvO3 my_dgesvOfast my_dgesvipo my_dgesvpgo
+
