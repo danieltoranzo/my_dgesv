@@ -143,8 +143,7 @@ int gaussianElimination(float* matrix, float *augmented_matrix,const int n){
 	    matrix = __builtin_assume_aligned(matrix,32);
 	    augmented_matrix = __builtin_assume_aligned(augmented_matrix,32);
 	#endif
-	int i=0;
-    for (i = 0; i<n; i++) {
+    for (int i = 0; i<n; i++) {
         if(matrix[i*n +i] == 0) {
             int greater = i;
             for (int j = 0; j < n; j++){
